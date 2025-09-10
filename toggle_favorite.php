@@ -1,56 +1,44 @@
 <?php
-// Initialize the session
 session_start();
+require_once 'config.php';
 
-// Check if the user is logged in, if not then redirect to login page
-if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: login.php");
-    exit;
+// Ensure the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
 }
 
-// Include config file
-require_once "config.php";
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $recipe_id = isset($_POST['recipe_id']) ? (int)$_POST['recipe_id'] : 0;
+    $user_id = $_SESSION['user_id'];
 
-// Check if recipe_id is provided
-if (isset($_POST['recipe_id']) && !empty($_POST['recipe_id'])) {
-    $recipe_id = $_POST['recipe_id'];
-    $user_id = $_SESSION['id'];
+    if ($recipe_id > 0) {
+        try {
+            // Check if the recipe is already a favorite
+            $stmt = $pdo->prepare("SELECT id FROM favorites WHERE user_id = ? AND recipe_id = ?");
+            $stmt->execute([$user_id, $recipe_id]);
+            $existing_favorite = $stmt->fetch();
 
-    // Check if the recipe is already favorited by the user
-    $sql_check = "SELECT id FROM favorites WHERE user_id = ? AND recipe_id = ?";
-    
-    if ($stmt_check = mysqli_prepare($link, $sql_check)) {
-        mysqli_stmt_bind_param($stmt_check, "ii", $user_id, $recipe_id);
-        mysqli_stmt_execute($stmt_check);
-        mysqli_stmt_store_result($stmt_check);
-
-        if (mysqli_stmt_num_rows($stmt_check) > 0) {
-            // It's already a favorite, so REMOVE it
-            $sql_delete = "DELETE FROM favorites WHERE user_id = ? AND recipe_id = ?";
-            if ($stmt_delete = mysqli_prepare($link, $sql_delete)) {
-                mysqli_stmt_bind_param($stmt_delete, "ii", $user_id, $recipe_id);
-                mysqli_stmt_execute($stmt_delete);
-                mysqli_stmt_close($stmt_delete);
+            if ($existing_favorite) {
+                // If it exists, remove it
+                $deleteStmt = $pdo->prepare("DELETE FROM favorites WHERE id = ?");
+                $deleteStmt->execute([$existing_favorite['id']]);
+            } else {
+                // If it does not exist, add it
+                $insertStmt = $pdo->prepare("INSERT INTO favorites (user_id, recipe_id) VALUES (?, ?)");
+                $insertStmt->execute([$user_id, $recipe_id]);
             }
-        } else {
-            // It's not a favorite, so ADD it
-            $sql_insert = "INSERT INTO favorites (user_id, recipe_id) VALUES (?, ?)";
-            if ($stmt_insert = mysqli_prepare($link, $sql_insert)) {
-                mysqli_stmt_bind_param($stmt_insert, "ii", $user_id, $recipe_id);
-                mysqli_stmt_execute($stmt_insert);
-                mysqli_stmt_close($stmt_insert);
-            }
+
+        } catch (PDOException $e) {
+            // In a real application, you'd log this error.
+            // For now, we'll just stop execution to see the error.
+            die("Database error: " . $e->getMessage());
         }
-        mysqli_stmt_close($stmt_check);
     }
-    
-    // Redirect back to the recipe page they were on
-    header("location: recipe.php?id=" . $recipe_id);
-    exit;
-
-} else {
-    // If no recipe ID was provided, redirect to homepage
-    header("location: index.php");
-    exit;
 }
+
+// *** THE FIX: Redirect to the favorites page to see the result! ***
+header("Location: favorites.php");
+exit();
 ?>
+
