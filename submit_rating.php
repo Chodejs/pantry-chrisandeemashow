@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Start output buffering as the very first thing.
 session_start();
 require_once 'config.php';
 
@@ -6,6 +7,7 @@ require_once 'config.php';
 if (!isset($_SESSION['user_id'])) {
     // Redirect to login page if not logged in
     header('Location: login.php');
+    ob_end_flush(); // Send buffer before exiting
     exit();
 }
 
@@ -41,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     rating_count = (SELECT COUNT(*) FROM ratings WHERE recipe_id = ?)
                  WHERE id = ?"
             );
-            // *** FIX: Provide the recipe_id for all three placeholders ***
             $recalcStmt->execute([$recipe_id, $recipe_id, $recipe_id]);
 
             // If all queries were successful, commit the changes
@@ -50,14 +51,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } catch (PDOException $e) {
             // If any part of the transaction fails, roll everything back
             $pdo->rollBack();
-            // For debugging, it's helpful to see the error. In production, you might log this.
             die("Database error: " . $e->getMessage());
         }
     }
 }
 
 // Redirect the user back to the recipe page they were on
-header("Location: recipe.php?id=" . $recipe_id);
+if (!empty($recipe_id)) {
+    header("Location: recipe.php?id=" . $recipe_id);
+} else {
+    // Fallback if recipe_id is somehow lost
+    header("Location: index.php");
+}
+ob_end_flush(); // Send buffer before exiting
 exit();
 ?>
-

@@ -43,16 +43,18 @@ try {
 <body class="bg-gray-100 text-gray-800">
 
     <!-- Navigation Bar -->
-    <header class="bg-white shadow-md">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+    <header class="bg-white shadow-md no-print sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
             <a href="index.php" class="text-2xl font-bold text-green-600">The Plant-Powered Pantry</a>
-            <div class="flex items-center space-x-4">
-                <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full">
-                    <input type="text" name="query" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-4">
+                 <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full">
+                    <input type="text" name="q" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
                     <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500"><i class="fas fa-search"></i></button>
                 </form>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <span class="text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</span>
+                    <span class="text-gray-700">Welcome, <?php echo htmlspecialchars(strtok($_SESSION['username'], ' ')); ?>!</span>
                     <a href="favorites.php" class="text-green-600 font-semibold border-b-2 border-green-600">My Favorites</a>
                     <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
                         <a href="admin_remixes.php" class="text-blue-600 hover:text-blue-800 font-semibold">Admin Panel</a>
@@ -63,7 +65,37 @@ try {
                     <a href="register.php" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Register</a>
                 <?php endif; ?>
             </div>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
         </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full mb-4 px-2">
+                    <input type="text" name="q" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
+                    <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500"><i class="fas fa-search"></i></button>
+                </form>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <p class="block px-3 py-2 text-base font-medium text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                    <a href="favorites.php" class="block px-3 py-2 rounded-md text-base font-medium text-green-700 bg-green-50">My Favorites</a>
+                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                        <a href="admin_remixes.php" class="block px-3 py-2 rounded-md text-base font-medium text-blue-600 hover:text-blue-800 hover:bg-gray-50">Admin Panel</a>
+                    <?php endif; ?>
+                    <a href="logout.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Logout</a>
+                <?php else: ?>
+                    <a href="login.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Login</a>
+                    <a href="register.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-green-500 hover:bg-green-600">Register</a>
+                <?php endif; ?>
+            </div>
+        </div>
     </header>
 
     <!-- Main Content -->
@@ -83,10 +115,10 @@ try {
                             <div class="flex items-center">
                                 <div class="flex items-center text-amber-500">
                                     <?php for ($i = 1; $i <= 5; $i++): ?>
-                                        <i class="fas fa-star <?php echo ($i <= round($recipe['average_rating'])) ? 'text-amber-500' : 'text-gray-300'; ?>"></i>
+                                        <i class="fas fa-star <?php echo (isset($recipe['average_rating']) && $i <= round($recipe['average_rating'])) ? 'text-amber-500' : 'text-gray-300'; ?>"></i>
                                     <?php endfor; ?>
                                 </div>
-                                <span class="ml-2 text-sm text-gray-500">(<?php echo $recipe['rating_count']; ?>)</span>
+                                <span class="ml-2 text-sm text-gray-500">(<?php echo $recipe['rating_count'] ?? 0; ?>)</span>
                             </div>
                         </div>
                     </div>
@@ -103,9 +135,19 @@ try {
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; <?php echo date('Y'); ?> Chris and Emma Show. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> The Chris and Emma Show. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        // JavaScript for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
 
 </body>
 </html>

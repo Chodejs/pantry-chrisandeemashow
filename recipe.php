@@ -123,11 +123,12 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
 <body class="bg-gray-100 text-gray-800">
 
     <!-- Navigation Bar -->
-    <header class="bg-white shadow-md no-print">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+    <header class="bg-white shadow-md no-print sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
             <a href="index.php" class="text-2xl font-bold text-green-600">The Plant-Powered Pantry</a>
-            <div class="flex items-center space-x-4">
-                 <!-- Search Bar -->
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-4">
                 <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full">
                     <input type="text" name="query" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
                     <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500">
@@ -135,8 +136,8 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     </button>
                 </form>
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <span class="text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</span>
-                     <a href="favorites.php" class="text-gray-600 hover:text-green-600">My Favorites</a>
+                    <span class="text-gray-700">Welcome, <?php echo htmlspecialchars(strtok($_SESSION['username'], ' ')); ?>!</span>
+                    <a href="favorites.php" class="text-gray-600 hover:text-green-600">My Favorites</a>
                     <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
                         <a href="admin_remixes.php" class="text-blue-600 hover:text-blue-800 font-semibold">Admin Panel</a>
                     <?php endif; ?>
@@ -146,12 +147,51 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <a href="register.php" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Register</a>
                 <?php endif; ?>
             </div>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
+            </div>
         </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                 <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full mb-4 px-2">
+                    <input type="text" name="query" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
+                    <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <p class="block px-3 py-2 text-base font-medium text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                    <a href="favorites.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">My Favorites</a>
+                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                        <a href="admin_remixes.php" class="block px-3 py-2 rounded-md text-base font-medium text-blue-600 hover:text-blue-800 hover:bg-gray-50">Admin Panel</a>
+                    <?php endif; ?>
+                    <a href="logout.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Logout</a>
+                <?php else: ?>
+                    <a href="login.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Login</a>
+                    <a href="register.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-green-500 hover:bg-green-600">Register</a>
+                <?php endif; ?>
+            </div>
+        </div>
     </header>
 
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-12">
         
+        <?php if (isset($_GET['remix_submitted']) && $_GET['remix_submitted'] == 'true'): ?>
+        <div class="max-w-4xl mx-auto bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-md mb-6" role="alert">
+            <p class="font-bold">Thank You!</p>
+            <p>Your remix has been submitted successfully and is now awaiting approval from our team.</p>
+        </div>
+        <?php endif; ?>
+
         <div class="max-w-4xl mx-auto mb-6 no-print">
              <a href="javascript:history.back()" class="inline-flex items-center text-gray-600 hover:text-green-700 font-semibold">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -166,7 +206,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
             
             <h1 class="text-4xl font-extrabold text-gray-900 mb-2"><?php echo htmlspecialchars($recipe['title']); ?></h1>
             
-            <!-- RATING DISPLAY -->
             <div class="flex items-center mb-4">
                 <div class="flex items-center">
                     <?php for ($i = 1; $i <= 5; $i++): ?>
@@ -181,8 +220,7 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
 
             <p class="text-lg text-gray-600 mb-6"><?php echo htmlspecialchars($recipe['description']); ?></p>
 
-             <!-- Action Buttons -->
-            <div class="flex flex-wrap items-center gap-4 mb-8 no-print">
+             <div class="flex flex-wrap items-center gap-4 mb-8 no-print">
                 <form action="toggle_favorite.php" method="POST" class="flex-shrink-0">
                     <input type="hidden" name="recipe_id" value="<?php echo $recipe['id']; ?>">
                     <button type="submit" class="px-6 py-2 rounded-md font-semibold flex items-center space-x-2 <?php echo $is_favorited ? 'bg-pink-500 text-white' : 'bg-pink-100 text-pink-800'; ?> hover:bg-pink-200 transition-colors">
@@ -208,35 +246,27 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                 </a>
             </div>
 
-            <!-- Social Share Section -->
              <div class="bg-gray-50 p-4 rounded-lg mb-8 no-print">
                 <h3 class="font-semibold text-center text-gray-700 mb-3">Share this Recipe</h3>
                 <div class="flex justify-center items-center gap-3 flex-wrap">
-                    <!-- Facebook -->
                     <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $share_url; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors" aria-label="Share on Facebook">
                         <i class="fab fa-facebook-f"></i>
                     </a>
-                    <!-- Twitter -->
                     <a href="https://twitter.com/intent/tweet?url=<?php echo $share_url; ?>&text=<?php echo $share_title; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-black text-white hover:bg-gray-800 transition-colors" aria-label="Share on X">
                         <i class="fab fa-twitter"></i>
                     </a>
-                    <!-- Pinterest -->
                     <a href="https://pinterest.com/pin/create/button/?url=<?php echo $share_url; ?>&media=<?php echo $share_image; ?>&description=<?php echo $share_description; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors" aria-label="Share on Pinterest">
                         <i class="fab fa-pinterest-p"></i>
                     </a>
-                    <!-- Reddit -->
                     <a href="https://www.reddit.com/submit?url=<?php echo $share_url; ?>&title=<?php echo $share_title; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-orange-500 text-white hover:bg-orange-600 transition-colors" aria-label="Share on Reddit">
                         <i class="fab fa-reddit-alien"></i>
                     </a>
-                    <!-- LinkedIn -->
                      <a href="https://www.linkedin.com/shareArticle?mini=true&url=<?php echo $share_url; ?>&title=<?php echo $share_title; ?>&summary=<?php echo $share_description; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-sky-700 text-white hover:bg-sky-800 transition-colors" aria-label="Share on LinkedIn">
                         <i class="fab fa-linkedin-in"></i>
                     </a>
-                    <!-- WhatsApp -->
                     <a href="https://api.whatsapp.com/send?text=<?php echo $share_title; ?>%20<?php echo $share_url; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors" aria-label="Share on WhatsApp">
                         <i class="fab fa-whatsapp"></i>
                     </a>
-                    <!-- Copy Link -->
                     <button id="copy-link-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-500 text-white hover:bg-gray-600 transition-colors" aria-label="Copy Link">
                         <i class="fas fa-link"></i>
                     </button>
@@ -244,7 +274,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                 </div>
             </div>
 
-            <!-- USER RATING SUBMISSION -->
             <?php if (isset($_SESSION['user_id'])): ?>
             <div class="bg-amber-50 p-4 rounded-lg mb-8 no-print">
                  <h3 class="font-semibold text-center text-amber-800 mb-2"><?php echo $user_rating > 0 ? 'You rated this recipe:' : 'Rate this recipe!'; ?></h3>
@@ -261,8 +290,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
             </div>
             <?php endif; ?>
 
-
-            <!-- Recipe Meta Info -->
             <div class="flex justify-around bg-gray-50 p-4 rounded-lg mb-8 text-center">
                 <div>
                     <h4 class="font-bold text-gray-500 text-sm">Prep Time</h4>
@@ -278,7 +305,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                 </div>
             </div>
 
-            <!-- Ingredients & Instructions -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div>
                     <h2 class="text-2xl font-bold mb-4">Ingredients</h2>
@@ -307,10 +333,8 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     </ol>
                 </div>
             </div>
-             <!-- Additional Information Section -->
              <div class="bg-gray-50 p-6 rounded-lg mb-8">
                 <h2 class="text-2xl font-bold mb-4">Additional Information</h2>
-                <!-- Nutrition Facts -->
                 <div class="mb-6">
                     <h3 class="text-xl font-semibold mb-3">Nutrition Facts (Summary)</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
@@ -329,13 +353,11 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     ?>
                     </div>
                 </div>
-                 <!-- Chef's Notes -->
                 <div>
                     <h3 class="text-xl font-semibold mb-3">Chef's Notes</h3>
                     <ul class="list-disc list-inside space-y-2 text-gray-700 word-wrap-break">
                     <?php
                         if (!empty($recipe['notes'])) {
-                             // Split the notes by sentence-ending punctuation followed by a space
                             $notes_array = preg_split('/(?<=[.?!])\s+/', $recipe['notes'], -1, PREG_SPLIT_NO_EMPTY);
                             foreach ($notes_array as $note_sentence) {
                                 echo '<li>' . htmlspecialchars(trim($note_sentence)) . '</li>';
@@ -348,7 +370,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                 </div>
             </div>
 
-            <!-- Community Remixes Section -->
             <div class="pt-8 border-t no-print">
                 <h2 class="text-3xl font-bold mb-6 text-center">Community Remixes</h2>
                  <?php if (count($remixes) > 0): ?>
@@ -371,11 +392,9 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                 <?php endif; ?>
             </div>
 
-             <!-- Community Comments Section -->
             <div class="pt-8 mt-8 border-t no-print">
                 <h2 class="text-3xl font-bold mb-6 text-center">Community Comments</h2>
 
-                <!-- Comment Submission Form -->
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <form action="add_comment.php" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow mb-8">
                         <input type="hidden" name="recipe_id" value="<?php echo $recipe['id']; ?>">
@@ -393,7 +412,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <p class="text-center text-gray-600 bg-gray-100 p-4 rounded-lg">You must be <a href="login.php" class="text-green-600 font-semibold hover:underline">logged in</a> to post a comment.</p>
                 <?php endif; ?>
 
-                 <!-- Existing Comments -->
                 <div class="space-y-6">
                     <?php if (count($comments) > 0): ?>
                         <?php foreach($comments as $comment): ?>
@@ -416,7 +434,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
         </article>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8 mt-12 no-print">
         <div class="container mx-auto px-6 text-center">
             <p>&copy; <?php echo date('Y'); ?> Chris and Emma Show. All rights reserved.</p>
@@ -424,6 +441,14 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
     </footer>
 
     <script>
+        // JavaScript for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
         // JavaScript for the copy link button
         const copyBtn = document.getElementById('copy-link-btn');
         const feedbackSpan = document.getElementById('copy-feedback');
@@ -431,16 +456,13 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
         copyBtn.addEventListener('click', () => {
             const urlToCopy = '<?php echo $current_page_url; ?>';
 
-            // Use the modern Clipboard API
             navigator.clipboard.writeText(urlToCopy).then(() => {
-                // Success feedback
                 feedbackSpan.style.opacity = '1';
                 setTimeout(() => {
                     feedbackSpan.style.opacity = '0';
-                }, 2000); // Fade out after 2 seconds
+                }, 2000);
             }).catch(err => {
                 console.error('Failed to copy: ', err);
-                // You could add fallback logic here for older browsers if needed
             });
         });
     </script>

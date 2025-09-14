@@ -29,8 +29,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $instructions_json = json_encode($instructions_array);
     
     // Process nutrition info into a JSON object
-    $nutrition_keys = $_POST['nutrition_key'];
-    $nutrition_values = $_POST['nutrition_value'];
+    $nutrition_keys = $_POST['nutrition_key'] ?? [];
+    $nutrition_values = $_POST['nutrition_value'] ?? [];
     $nutrition_array = [];
     for ($i = 0; $i < count($nutrition_keys); $i++) {
         if (!empty($nutrition_keys[$i]) && !empty($nutrition_values[$i])) {
@@ -80,6 +80,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             if ($stmt->execute([$title, $description, $ingredients_json, $instructions_json, $prep_time, $cook_time, $yields, $image_url, $nutrition_json, $notes, $author_id])) {
                 $success_message = "Recipe added successfully! You can add another one.";
+                 // Clear POST data to reset the form by redirecting
+                header("Location: admin_add_recipe.php?success=1");
+                exit();
             } else {
                 $error_message = "Failed to add the recipe to the database.";
             }
@@ -87,6 +90,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error_message = "Database error: " . $e->getMessage();
         }
     }
+}
+
+// Check for success message from redirect
+if (isset($_GET['success']) && $_GET['success'] == 1) {
+    $success_message = "Recipe added successfully! You can now add another one.";
 }
 ?>
 <!DOCTYPE html>
@@ -103,16 +111,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <!-- Admin Navigation -->
     <header class="bg-white shadow-md">
-        <nav class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="text-2xl font-bold text-gray-800">Admin Dashboard</div>
-                <div class="flex items-center space-x-4">
-                    <a href="admin_remixes.php" class="text-gray-600 hover:text-green-600">Remix Moderation</a>
-                    <a href="admin_add_recipe.php" class="text-green-600 font-semibold border-b-2 border-green-600">Add a Recipe</a>
-                    <a href="index.php" class="text-gray-600 hover:text-green-600">Back to Site</a>
-                </div>
+        <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold text-gray-800">Admin Dashboard</div>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="admin_remixes.php" class="text-gray-600 hover:text-green-600">Remix Moderation</a>
+                <a href="admin_add_recipe.php" class="text-green-600 font-semibold border-b-2 border-green-600">Add a Recipe</a>
+                <a href="index.php" class="text-gray-600 hover:text-green-600">Back to Site</a>
+                <a href="logout.php" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Logout</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                    </svg>
+                </button>
             </div>
         </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="admin_remixes.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Remix Moderation</a>
+                <a href="admin_add_recipe.php" class="block px-3 py-2 rounded-md text-base font-medium text-green-700 bg-green-50">Add a Recipe</a>
+                <a href="index.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Back to Site</a>
+                <a href="logout.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Logout</a>
+            </div>
+        </div>
     </header>
 
     <main class="container mx-auto px-6 py-12">
@@ -206,7 +234,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             `;
             container.appendChild(newRow);
         });
+
+        // JavaScript for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
     </script>
 </body>
 </html>
-

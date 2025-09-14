@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once "config.php";
+require_once 'config.php'; // This provides the $pdo object
 
 // Redirect if no search query is provided
 if (!isset($_GET['q']) || empty(trim($_GET['q']))) {
@@ -11,23 +11,20 @@ if (!isset($_GET['q']) || empty(trim($_GET['q']))) {
 $search_term = trim($_GET['q']);
 $recipes = [];
 
-// Prepare the search query
-$sql = "SELECT id, title, description, image_url FROM recipes WHERE title LIKE ? OR description LIKE ?";
-if ($stmt = mysqli_prepare($link, $sql)) {
-    $param_term = "%" . $search_term . "%";
-    mysqli_stmt_bind_param($stmt, "ss", $param_term, $param_term);
+try {
+    // Prepare and execute the search query using PDO
+    $sql = "SELECT id, title, description, image_url, average_rating, rating_count FROM recipes WHERE title LIKE ? OR description LIKE ?";
+    $stmt = $pdo->prepare($sql);
     
-    if (mysqli_stmt_execute($stmt)) {
-        $result = mysqli_stmt_get_result($stmt);
-        while ($row = mysqli_fetch_assoc($result)) {
-            $recipes[] = $row;
-        }
-    } else {
-        echo "Oops! Something went wrong executing the search.";
-    }
-    mysqli_stmt_close($stmt);
+    $param_term = "%" . $search_term . "%";
+    $stmt->execute([$param_term, $param_term]);
+    
+    $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    // For debugging, it's helpful to see the error. In production, you would log this.
+    die("Search operation failed: " . $e->getMessage());
 }
-mysqli_close($link);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,33 +34,62 @@ mysqli_close($link);
     <title>Search Results for "<?php echo htmlspecialchars($search_term); ?>"</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
-    <header class="bg-white shadow-md py-4">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <a href="index.php" class="text-3xl font-extrabold text-green-700">The Plant-Powered Pantry</a>
-            <nav class="space-x-4 flex items-center">
-                <!-- Search Bar -->
-                <form action="search.php" method="get" class="relative hidden sm:block">
-                    <input type="search" name="q" placeholder="Search recipes..." class="px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-500" value="<?php echo htmlspecialchars($search_term); ?>">
-                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-green-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-                    </button>
+    
+    <!-- Navigation Bar -->
+    <header class="bg-white shadow-md no-print sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+            <a href="index.php" class="text-2xl font-bold text-green-600">The Plant-Powered Pantry</a>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-4">
+                 <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full">
+                    <input type="text" name="q" placeholder="Search..." value="<?php echo htmlspecialchars($search_term); ?>" class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
+                    <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500"><i class="fas fa-search"></i></button>
                 </form>
-
-                 <?php if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true): ?>
-                    <span class="font-semibold hidden lg:inline">Welcome, <?php echo htmlspecialchars($_SESSION["username"]); ?>!</span>
-                    <a href="favorites.php" class="text-gray-600 hover:text-green-700">My Favorites</a>
-                     <?php if (isset($_SESSION["is_admin"]) && $_SESSION["is_admin"] === true): ?>
-                        <a href="admin_remixes.php" class="text-red-600 font-bold hover:text-red-700">Admin Panel</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <span class="text-gray-700">Welcome, <?php echo htmlspecialchars(strtok($_SESSION['username'], ' ')); ?>!</span>
+                    <a href="favorites.php" class="text-gray-600 hover:text-green-600">My Favorites</a>
+                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                        <a href="admin_remixes.php" class="text-blue-600 hover:text-blue-800 font-semibold">Admin Panel</a>
                     <?php endif; ?>
-                    <a href="logout.php" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700">Logout</a>
+                    <a href="logout.php" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Logout</a>
                 <?php else: ?>
-                    <a href="login.php" class="text-gray-600 hover:text-green-700">Login</a>
-                    <a href="register.php" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700">Register</a>
+                    <a href="login.php" class="text-gray-600 hover:text-green-600">Login</a>
+                    <a href="register.php" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Register</a>
                 <?php endif; ?>
-            </nav>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full mb-4 px-2">
+                    <input type="text" name="q" placeholder="Search..." value="<?php echo htmlspecialchars($search_term); ?>" class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
+                    <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500"><i class="fas fa-search"></i></button>
+                </form>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <p class="block px-3 py-2 text-base font-medium text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
+                    <a href="favorites.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">My Favorites</a>
+                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                        <a href="admin_remixes.php" class="block px-3 py-2 rounded-md text-base font-medium text-blue-600 hover:text-blue-800 hover:bg-gray-50">Admin Panel</a>
+                    <?php endif; ?>
+                    <a href="logout.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Logout</a>
+                <?php else: ?>
+                    <a href="login.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Login</a>
+                    <a href="register.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-green-500 hover:bg-green-600">Register</a>
+                <?php endif; ?>
+            </div>
         </div>
     </header>
 
@@ -85,6 +111,14 @@ mysqli_close($link);
                             <img src="<?php echo htmlspecialchars($recipe['image_url']); ?>" alt="<?php echo htmlspecialchars($recipe['title']); ?>" class="w-full h-48 object-cover">
                             <div class="p-6">
                                 <h3 class="text-2xl font-bold text-gray-900 mb-2 truncate"><?php echo htmlspecialchars($recipe['title']); ?></h3>
+                                <div class="flex items-center mb-4">
+                                    <div class="flex items-center text-amber-500">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <i class="fas fa-star <?php echo (isset($recipe['average_rating']) && $i <= round($recipe['average_rating'])) ? 'text-amber-500' : 'text-gray-300'; ?>"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <span class="ml-2 text-sm text-gray-500">(<?php echo $recipe['rating_count'] ?? 0; ?>)</span>
+                                </div>
                                 <p class="text-gray-700 text-base line-clamp-3"><?php echo htmlspecialchars($recipe['description']); ?></p>
                             </div>
                         </a>
@@ -94,10 +128,20 @@ mysqli_close($link);
         <?php endif; ?>
     </main>
 
-    <footer class="bg-gray-800 text-white py-6 text-center mt-12">
-        <div class="container mx-auto px-4">
-            <p class="text-sm">&copy; <?php echo date("Y"); ?> The Chris and Emma Show. All rights reserved.</p>
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; <?php echo date("Y"); ?> The Chris and Emma Show. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        // JavaScript for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>
