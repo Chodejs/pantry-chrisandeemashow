@@ -34,7 +34,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Favorites - The Plant-Powered Pantry</title>
+    <title>My Favorites - Chris and Emma's Pantry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -45,7 +45,7 @@ try {
     <!-- Navigation Bar -->
     <header class="bg-white shadow-md no-print sticky top-0 z-50">
         <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <a href="index.php" class="text-2xl font-bold text-green-600">The Plant-Powered Pantry</a>
+            <a href="index.php" class="text-2xl font-bold text-green-600">Chris and Emma's Pantry</a>
             
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-4">
@@ -135,7 +135,7 @@ try {
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; <?php echo date('Y'); ?> The Chris and Emma Show. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> <a href="https://www.chrisandemmashow.com" target="_blank" class="hover:underline">The Chris and Emma Show</a>. All rights reserved.</p>
         </div>
     </footer>
 

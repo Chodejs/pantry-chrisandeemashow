@@ -43,7 +43,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Plant-Powered Pantry</title>
+    <title>Chris and Emma's Panty</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -181,9 +181,9 @@ try {
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-8 mt-12">
+     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; <?php echo date('Y'); ?> The Chris and Emma Show. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> <a href="https://www.chrisandemmashow.com" target="_blank" class="hover:underline">The Chris and Emma Show</a>. All rights reserved.</p>
         </div>
     </footer>
     

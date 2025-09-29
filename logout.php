@@ -14,7 +14,7 @@ session_destroy();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logged Out | The Plant-Powered Pantry</title>
+    <title>Logged Out | Chris and Emma's Pantry</title>
     <!-- Redirect to the login page after 3 seconds -->
     <meta http-equiv="refresh" content="3;url=login.php">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,7 +25,7 @@ session_destroy();
 
     <header class="bg-white shadow-md py-6">
         <div class="container mx-auto px-4 text-center">
-            <a href="index.php" class="text-4xl font-extrabold text-green-700 hover:text-green-800 transition">The Plant-Powered Pantry</a>
+            <a href="index.php" class="text-4xl font-extrabold text-green-700 hover:text-green-800 transition">Chris and Emma's Pantry</a>
         </div>
     </header>
 
@@ -40,7 +40,7 @@ session_destroy();
 
     <footer class="bg-gray-800 text-white py-6 text-center mt-12 fixed bottom-0 w-full">
         <div class="container mx-auto px-4">
-            <p class="text-sm">&copy; <?php echo date("Y"); ?> The Chris and Emma Show. All rights reserved.</p>
+            <p class="text-sm">&copy; <?php echo date("Y"); ?> <a href="https://www.chrisandemmashow.com" target="_blank" class="hover:underline">The Chris and Emma Show</a>. All rights reserved.</p>
         </div>
     </footer>
 

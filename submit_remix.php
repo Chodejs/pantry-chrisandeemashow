@@ -108,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit a Remix - The Plant-Powered Pantry</title>
+    <title>Submit a Remix - Chris and Emma's Pantry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style> body { font-family: 'Inter', sans-serif; } </style>
@@ -117,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     <header class="bg-white shadow-md">
         <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <a href="index.php" class="text-2xl font-bold text-green-600">The Plant-Powered Pantry</a>
+            <a href="index.php" class="text-2xl font-bold text-green-600">Chris and Emma's Pantry</a>
             
             <div class="hidden md:flex items-center space-x-4">
                 <a href="index.php" class="text-gray-600 hover:text-green-600">Home</a>

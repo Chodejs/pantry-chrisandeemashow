@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - The Plant-Powered Pantry</title>
+    <title>Register - Chris and Emma's Pantry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <div class="text-center mb-8">
-            <a href="index.php" class="text-3xl font-bold text-green-600">The Plant-Powered Pantry</a>
+            <a href="index.php" class="text-3xl font-bold text-green-600">Chris and Emma's Pantry</a>
             <h2 class="text-2xl font-bold text-gray-800 mt-4">Create Your Account</h2>
             <p class="text-gray-600">Join our community of food lovers!</p>
         </div>
@@ -111,4 +111,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </body>
 </html>
-

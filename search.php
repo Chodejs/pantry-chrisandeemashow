@@ -42,7 +42,7 @@ try {
     <!-- Navigation Bar -->
     <header class="bg-white shadow-md no-print sticky top-0 z-50">
         <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <a href="index.php" class="text-2xl font-bold text-green-600">The Plant-Powered Pantry</a>
+            <a href="index.php" class="text-2xl font-bold text-green-600">Chris and Emma's Pantry</a>
             
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-4">
@@ -130,7 +130,7 @@ try {
 
     <footer class="bg-gray-800 text-white py-8 mt-12">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; <?php echo date("Y"); ?> The Chris and Emma Show. All rights reserved.</p>
+            <p>&copy; <?php echo date("Y"); ?> <a href="https://www.chrisandemmashow.com" target="_blank" class="hover:underline">The Chris and Emma Show</a>. All rights reserved.</p>
         </div>
     </footer>
 
