@@ -2,28 +2,29 @@
 session_start();
 require_once 'config.php'; // This provides the $pdo object
 
-// Redirect if no search query is provided
-if (!isset($_GET['q']) || empty(trim($_GET['q']))) {
-    header("location: index.php");
-    exit;
-}
-
-$search_term = trim($_GET['q']);
+$search_term = isset($_GET['q']) ? trim($_GET['q']) : '';
 $recipes = [];
+$error_message = '';
 
-try {
-    // Prepare and execute the search query using PDO
-    $sql = "SELECT id, title, description, image_url, average_rating, rating_count FROM recipes WHERE title LIKE ? OR description LIKE ?";
-    $stmt = $pdo->prepare($sql);
-    
-    $param_term = "%" . $search_term . "%";
-    $stmt->execute([$param_term, $param_term]);
-    
-    $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if (empty($search_term)) {
+    $error_message = "The search field was empty. Please enter something to search for.";
+} else {
+    try {
+        // Prepare and execute the search query using PDO
+        $sql = "SELECT id, title, description, image_url, average_rating, rating_count FROM recipes WHERE title LIKE ? OR description LIKE ?";
+        $stmt = $pdo->prepare($sql);
+        
+        $param_term = "%" . $search_term . "%";
+        $stmt->execute([$param_term, $param_term]);
+        
+        $recipes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-} catch (PDOException $e) {
-    // For debugging, it's helpful to see the error. In production, you would log this.
-    die("Search operation failed: " . $e->getMessage());
+    } catch (PDOException $e) {
+        // For debugging, it's helpful to see the error. In production, you would log this.
+        $error_message = "Search operation failed. Please try again later.";
+        // Log the detailed error for your own review
+        error_log("Search operation failed: " . $e->getMessage());
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -95,15 +96,21 @@ try {
 
     <main class="container mx-auto px-4 py-12">
         <h1 class="text-4xl font-extrabold text-gray-800 mb-6">Search Results</h1>
-        <p class="text-xl text-gray-600 mb-8">Found <?php echo count($recipes); ?> result(s) for "<strong><?php echo htmlspecialchars($search_term); ?></strong>"</p>
-
-        <?php if (empty($recipes)): ?>
+        
+        <?php if (!empty($error_message)): ?>
+            <div class="text-center bg-white p-12 rounded-xl shadow-lg border border-red-200">
+                <p class="text-2xl text-red-700 font-semibold"><?php echo htmlspecialchars($error_message); ?></p>
+                <a href="index.php" class="mt-6 inline-block bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700">Back to All Recipes</a>
+            </div>
+        <?php elseif (empty($recipes) && !empty($search_term)): ?>
             <div class="text-center bg-white p-12 rounded-xl shadow-lg">
+                 <p class="text-xl text-gray-600 mb-2">Found <?php echo count($recipes); ?> result(s) for "<strong><?php echo htmlspecialchars($search_term); ?></strong>"</p>
                 <p class="text-2xl text-gray-700">Sorry, we couldn't find any recipes matching your search.</p>
-                <p class="text-gray-500 mt-2">Try searching for a different keyword or check out our latest recipes below!</p>
+                <p class="text-gray-500 mt-2">Try searching for a different keyword or check out our latest recipes!</p>
                 <a href="index.php" class="mt-6 inline-block bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700">Back to All Recipes</a>
             </div>
         <?php else: ?>
+             <p class="text-xl text-gray-600 mb-8">Found <?php echo count($recipes); ?> result(s) for "<strong><?php echo htmlspecialchars($search_term); ?></strong>"</p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <?php foreach ($recipes as $recipe): ?>
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl">
