@@ -54,7 +54,7 @@ try {
     <!-- Navigation Bar -->
     <header class="bg-white shadow-md no-print sticky top-0 z-50">
         <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <a href="index.php" class="text-2xl font-bold text-green-600">The Plant-Powered Pantry</a>
+            <a href="index.php" class="text-2xl font-bold text-green-600">Chris and Emma's Pantry</a>
             
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-4">
@@ -111,7 +111,7 @@ try {
     <main class="container mx-auto px-6 py-12">
         <!-- Hero Section -->
         <section class="text-center mb-12">
-            <h1 class="text-5xl font-extrabold text-gray-900 mb-4">Welcome to the Pantry</h1>
+            <h1 class="text-5xl font-extrabold text-gray-900 mb-4">Welcome to Our Plant-Powered Pantry</h1>
             <p class="text-xl text-gray-600">Discover a growing collection of delicious, wholesome, and plant-powered recipes from our kitchen to yours.</p>
              <!-- Search Bar -->
             <div class="mt-8 max-w-lg mx-auto">
