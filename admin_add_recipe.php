@@ -19,14 +19,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cook_time = filter_input(INPUT_POST, 'cook_time', FILTER_VALIDATE_INT);
     $yields = trim($_POST['yields']);
     
-    // Process ingredients and instructions from textareas into JSON arrays
+    // Process ingredients and instructions from textareas
     $ingredients_raw = trim($_POST['ingredients']);
-    $ingredients_array = array_filter(array_map('trim', explode("\n", $ingredients_raw)));
-    $ingredients_json = json_encode($ingredients_array);
+    $ingredients_json = json_encode(array_filter(array_map('trim', explode("\n", $ingredients_raw))));
 
     $instructions_raw = trim($_POST['instructions']);
-    $instructions_array = array_filter(array_map('trim', explode("\n", $instructions_raw)));
-    $instructions_json = json_encode($instructions_array);
+    $instructions_json = json_encode(array_filter(array_map('trim', explode("\n", $instructions_raw))));
     
     // Process nutrition info into a JSON object
     $nutrition_keys = $_POST['nutrition_key'] ?? [];
@@ -40,10 +38,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nutrition_json = json_encode($nutrition_array);
 
     $notes = trim($_POST['notes']);
-    $author_id = $_SESSION['user_id']; // The logged-in admin is the author
+    $author_id = $_SESSION['user_id'];
 
     // --- Image Upload Handling ---
-    $image_url = ''; // Default empty
+    $image_url = '';
     if (isset($_FILES['recipe_image']) && $_FILES['recipe_image']['error'] == 0) {
         $target_dir = "uploads/recipes/";
         if (!is_dir($target_dir)) {
@@ -53,10 +51,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $target_file = $target_dir . $image_name;
         $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
-        // Basic validation
         $check = getimagesize($_FILES["recipe_image"]["tmp_name"]);
         if ($check !== false) {
-            $allowed_types = ['jpg', 'png', 'jpeg', 'gif'];
+            $allowed_types = ['jpg', 'png', 'jpeg', 'gif', 'webp'];
             if (in_array($imageFileType, $allowed_types)) {
                 if (move_uploaded_file($_FILES["recipe_image"]["tmp_name"], $target_file)) {
                     $image_url = $target_file;
@@ -64,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $error_message = "Sorry, there was an error uploading your file.";
                 }
             } else {
-                $error_message = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+                $error_message = "Sorry, only JPG, JPEG, PNG, WEBP & GIF files are allowed.";
             }
         } else {
             $error_message = "File is not an image.";
@@ -79,9 +76,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt = $pdo->prepare($sql);
             
             if ($stmt->execute([$title, $description, $ingredients_json, $instructions_json, $prep_time, $cook_time, $yields, $image_url, $nutrition_json, $notes, $author_id])) {
-                $success_message = "Recipe added successfully! You can add another one.";
-                 // Clear POST data to reset the form by redirecting
-                header("Location: admin_add_recipe.php?success=1");
+                // **FIX 1: Use the current file's path for the redirect**
+                header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
                 exit();
             } else {
                 $error_message = "Failed to add the recipe to the database.";
@@ -102,41 +98,33 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Add Recipe</title>
+    <title>Admin - Enhanced Recipe Uploader</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 <body class="bg-gray-100">
 
-    <!-- Admin Navigation -->
+    <!-- Admin Navigation (Same as before) -->
     <header class="bg-white shadow-md">
         <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
             <div class="text-2xl font-bold text-gray-800">Admin Dashboard</div>
-            
-            <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-4">
                 <a href="admin_remixes.php" class="text-gray-600 hover:text-green-600">Remix Moderation</a>
-                <a href="admin_add_recipe.php" class="text-green-600 font-semibold border-b-2 border-green-600">Add a Recipe</a>
+                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="text-green-600 font-semibold border-b-2 border-green-600">Add a Recipe (Enhanced)</a>
                 <a href="index.php" class="text-gray-600 hover:text-green-600">Back to Site</a>
                 <a href="logout.php" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Logout</a>
             </div>
-
-            <!-- Mobile Menu Button -->
             <div class="md:hidden">
                 <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                    </svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
                 </button>
             </div>
         </nav>
-
-        <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                 <a href="admin_remixes.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Remix Moderation</a>
-                <a href="admin_add_recipe.php" class="block px-3 py-2 rounded-md text-base font-medium text-green-700 bg-green-50">Add a Recipe</a>
+                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="block px-3 py-2 rounded-md text-base font-medium text-green-700 bg-green-50">Add a Recipe (Enhanced)</a>
                 <a href="index.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Back to Site</a>
                 <a href="logout.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Logout</a>
             </div>
@@ -144,104 +132,233 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
     </header>
 
     <main class="container mx-auto px-6 py-12">
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-8">Add New Recipe</h1>
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-8">Enhanced Recipe Uploader</h1>
 
-        <form action="admin_add_recipe.php" method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-lg space-y-6">
-            
-            <?php if ($success_message): ?>
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert"><?php echo $success_message; ?></div>
-            <?php endif; ?>
-            <?php if ($error_message): ?>
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert"><?php echo $error_message; ?></div>
-            <?php endif; ?>
-
-            <div>
-                <label for="title" class="block text-sm font-medium text-gray-700">Recipe Title</label>
-                <input type="text" name="title" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-            </div>
-            
-            <div>
-                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                <textarea name="description" id="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></textarea>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Panel: Raw Text Input -->
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">1. Paste Raw Recipe Text</h2>
+                <p class="text-sm text-gray-600 mb-4">Paste the entire recipe from your document here. My script will read it and attempt to fill out the form on the right.</p>
+                <textarea id="raw-recipe-input" rows="25" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Silken Tofu Chocolate Pudding..."></textarea>
+                <button type="button" id="parse-recipe-btn" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Let Emma Work Her Magic (Parse Recipe)
+                </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                 <div>
-                    <label for="prep_time" class="block text-sm font-medium text-gray-700">Prep Time (mins)</label>
-                    <input type="number" name="prep_time" id="prep_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                </div>
-                 <div>
-                    <label for="cook_time" class="block text-sm font-medium text-gray-700">Cook Time (mins)</label>
-                    <input type="number" name="cook_time" id="cook_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                </div>
-                 <div>
-                    <label for="yields" class="block text-sm font-medium text-gray-700">Yields</label>
-                    <input type="text" name="yields" id="yields" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="e.g., 4 servings" required>
-                </div>
-            </div>
+            <!-- Right Panel: The Recipe Form -->
+            <!-- **FIX 2: Use the current file's path for the form action** -->
+            <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-lg space-y-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">2. Review & Save</h2>
+                
+                <?php if ($success_message): ?>
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" role="alert"><?php echo htmlspecialchars($success_message); ?></div>
+                <?php endif; ?>
+                <?php if ($error_message): ?>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert"><?php echo htmlspecialchars($error_message); ?></div>
+                <?php endif; ?>
 
-             <div>
-                <label for="recipe_image" class="block text-sm font-medium text-gray-700">Recipe Image</label>
-                <input type="file" name="recipe_image" id="recipe_image" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="ingredients" class="block text-sm font-medium text-gray-700">Ingredients (one per line)</label>
-                    <textarea name="ingredients" id="ingredients" rows="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></textarea>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Recipe Title</label>
+                    <input type="text" name="title" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                 </div>
+                
                 <div>
-                    <label for="instructions" class="block text-sm font-medium text-gray-700">Instructions (one per line)</label>
-                    <textarea name="instructions" id="instructions" rows="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></textarea>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea name="description" id="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></textarea>
                 </div>
-            </div>
 
-             <div>
-                <label for="notes" class="block text-sm font-medium text-gray-700">Chef's Notes (one sentence per line)</label>
-                <textarea name="notes" id="notes" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"></textarea>
-            </div>
-
-            <!-- Dynamic Nutrition Info -->
-            <div id="nutrition-container">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Nutrition Facts (Key-Value Pairs)</label>
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                        <input type="text" name="nutrition_key[]" placeholder="e.g., Calories" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                        <input type="text" name="nutrition_value[]" placeholder="e.g., 250" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <div>
+                        <label for="prep_time" class="block text-sm font-medium text-gray-700">Prep Time (mins)</label>
+                        <input type="number" name="prep_time" id="prep_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                    </div>
+                     <div>
+                        <label for="cook_time" class="block text-sm font-medium text-gray-700">Cook Time (mins)</label>
+                        <input type="number" name="cook_time" id="cook_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
+                    </div>
+                     <div>
+                        <label for="yields" class="block text-sm font-medium text-gray-700">Yields</label>
+                        <input type="text" name="yields" id="yields" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="e.g., 4 servings" required>
                     </div>
                 </div>
-                <button type="button" id="add-nutrition-btn" class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-semibold">Add More</button>
-            </div>
 
-            <div class="pt-5">
-                <div class="flex justify-end">
-                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                        Save Recipe
-                    </button>
+                 <div>
+                    <label for="recipe_image" class="block text-sm font-medium text-gray-700">Recipe Image</label>
+                    <input type="file" name="recipe_image" id="recipe_image" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
                 </div>
-            </div>
-        </form>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="ingredients" class="block text-sm font-medium text-gray-700">Ingredients (one per line)</label>
+                        <textarea name="ingredients" id="ingredients" rows="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></textarea>
+                    </div>
+                    <div>
+                        <label for="instructions" class="block text-sm font-medium text-gray-700">Instructions (one per line)</label>
+                        <textarea name="instructions" id="instructions" rows="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></textarea>
+                    </div>
+                </div>
+
+                 <div>
+                    <label for="notes" class="block text-sm font-medium text-gray-700">Chef's Notes</label>
+                    <textarea name="notes" id="notes" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"></textarea>
+                </div>
+
+                <!-- Dynamic Nutrition Info -->
+                <div id="nutrition-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nutrition Facts (Key-Value Pairs)</label>
+                    <div class="space-y-2">
+                        <!-- JS will populate this -->
+                    </div>
+                    <button type="button" id="add-nutrition-btn" class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-semibold">Add More</button>
+                </div>
+
+                <div class="pt-5">
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Save Recipe
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </main>
 
     <script>
-        document.getElementById('add-nutrition-btn').addEventListener('click', function() {
-            const container = document.getElementById('nutrition-container').querySelector('.space-y-2');
+        // --- Emma's Magic Parsing Engine (v2) ---
+        // This Javascript code remains unchanged from the previous version.
+        document.getElementById('parse-recipe-btn').addEventListener('click', function() {
+            const rawText = document.getElementById('raw-recipe-input').value;
+            if (!rawText) {
+                alert('Please paste the recipe text first, my dear!');
+                return;
+            }
+
+            // --- Define Helper Functions ---
+            const getSection = (text, startKeyword, endKeywords = []) => {
+                const lowerText = text.toLowerCase();
+                const lowerStartKeyword = startKeyword.toLowerCase();
+                const startIndex = lowerText.indexOf(lowerStartKeyword);
+                if (startIndex === -1) return '';
+
+                let contentStartIndex = startIndex + startKeyword.length;
+                
+                if (text[contentStartIndex] === ':') {
+                    contentStartIndex++;
+                }
+
+                let textAfterStart = text.substring(contentStartIndex);
+                let endIndex = textAfterStart.length;
+
+                if (endKeywords.length > 0) {
+                    for (const endKeyword of endKeywords) {
+                        const currentEndIndex = textAfterStart.toLowerCase().indexOf(endKeyword.toLowerCase());
+                        if (currentEndIndex !== -1 && currentEndIndex < endIndex) {
+                            endIndex = currentEndIndex;
+                        }
+                    }
+                }
+                
+                return textAfterStart.substring(0, endIndex).trim();
+            };
+            
+            // --- 1. Parse Title & Description ---
+            const lines = rawText.split('\n');
+            document.getElementById('title').value = (lines[0] || '').trim();
+            
+            const descriptionMatch = rawText.match(/^[^\n]+\n+([\s\S]+?)(?=^\s*(?:Yields|Prep time|Cook time|Ingredients|Instructions):)/im);
+            document.getElementById('description').value = descriptionMatch ? descriptionMatch[1].trim() : '';
+
+
+            // --- 2. Parse Meta Info (Yields, Prep, Cook) ---
+            const prepTimeMatch = rawText.match(/Prep time:\s*(\d+)/i);
+            document.getElementById('prep_time').value = prepTimeMatch ? prepTimeMatch[1] : '';
+            
+            const cookTimeMatch = rawText.match(/Cook time:\s*(\d+)/i);
+            document.getElementById('cook_time').value = cookTimeMatch ? cookTimeMatch[1] : '0';
+
+            const yieldsMatch = rawText.match(/Yields:\s*(.*?)(?=\s*(?:Prep time|Cook time|Ingredients)|$)/im);
+            document.getElementById('yields').value = yieldsMatch ? yieldsMatch[1].trim() : '';
+
+            // --- 3. Parse Ingredients & Instructions ---
+            const ingredientsBlock = getSection(rawText, 'Ingredients', ['Instructions:', 'Nutritional Information:', 'Notes:', 'Note on']);
+            document.getElementById('ingredients').value = ingredientsBlock.replace(/^[*-]\s*/gm, '').trim();
+
+            const instructionsBlock = getSection(rawText, 'Instructions', ['Nutritional Information:', 'Notes:', 'Note on']);
+            document.getElementById('instructions').value = instructionsBlock.replace(/^\d+\.\s*/gm, '').trim();
+
+            // --- 4. Parse Notes (More Robust) ---
+            let notesBlock = getSection(rawText, 'Notes', []); 
+            if (notesBlock) {
+                document.getElementById('notes').value = notesBlock;
+            } else {
+                notesBlock = getSection(rawText, 'Note on', []);
+                if (notesBlock) {
+                    document.getElementById('notes').value = 'Note on ' + notesBlock;
+                } else {
+                    document.getElementById('notes').value = '';
+                }
+            }
+            
+            // --- 5. Parse Nutrition Info ---
+            const nutritionContainer = document.querySelector('#nutrition-container .space-y-2');
+            nutritionContainer.innerHTML = '';
+
+            const nutritionBlock = getSection(rawText, 'Nutritional Information', ['Macronutrient Breakdown:', 'Note on', 'Notes:']);
+            if (nutritionBlock) {
+                const nutritionLines = nutritionBlock.split('\n').filter(line => line.includes(':') && !line.toLowerCase().includes('per serving'));
+                nutritionLines.forEach(line => {
+                    const parts = line.split(':');
+                    const key = parts[0].trim();
+                    const value = parts.slice(1).join(':').trim();
+                    if (key && value) addNutritionRow(key, value);
+                });
+            }
+             
+            const macroBlock = getSection(rawText, 'Macronutrient Breakdown', ['Note on', 'Notes:']);
+            if (macroBlock) {
+                const macroLines = macroBlock.split('\n').filter(line => line.includes(':'));
+                 macroLines.forEach(line => {
+                    const parts = line.split(':');
+                    const key = `Macro: ${parts[0].trim()}`;
+                    const value = parts.slice(1).join(':').trim();
+                    if(key && value) addNutritionRow(key, value);
+                 });
+            }
+        });
+
+        // Function to add a new nutrition row to the form
+        const addNutritionRow = (key = '', value = '') => {
+            const container = document.querySelector('#nutrition-container .space-y-2');
             const newRow = document.createElement('div');
             newRow.className = 'flex items-center gap-2';
             newRow.innerHTML = `
-                <input type="text" name="nutrition_key[]" placeholder="e.g., Protein" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
-                <input type="text" name="nutrition_value[]" placeholder="e.g., 15g" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                <input type="text" name="nutrition_key[]" placeholder="e.g., Protein" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" value="${escapeHTML(key)}">
+                <input type="text" name="nutrition_value[]" placeholder="e.g., 15g" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" value="${escapeHTML(value)}">
+                <button type="button" class="remove-nutrition-btn bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-full text-xs">&times;</button>
             `;
             container.appendChild(newRow);
+        };
+
+        // Utility to prevent basic HTML injection
+        const escapeHTML = str => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        
+        // Manual 'Add More' button
+        document.getElementById('add-nutrition-btn').addEventListener('click', () => addNutritionRow());
+
+        // Event delegation for removing nutrition rows
+        document.getElementById('nutrition-container').addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('remove-nutrition-btn')) {
+                e.target.parentElement.remove();
+            }
         });
 
         // JavaScript for mobile menu toggle
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
-        
         mobileMenuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
     </script>
 </body>
 </html>
+

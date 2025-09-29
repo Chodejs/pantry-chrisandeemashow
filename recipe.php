@@ -220,7 +220,7 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
 
             <p class="text-lg text-gray-600 mb-6"><?php echo htmlspecialchars($recipe['description']); ?></p>
 
-             <div class="flex flex-wrap items-center gap-4 mb-8 no-print">
+             <div class="flex flex-wrap items-center justify-center gap-4 mb-8 no-print">
                 <form action="toggle_favorite.php" method="POST" class="flex-shrink-0">
                     <input type="hidden" name="recipe_id" value="<?php echo $recipe['id']; ?>">
                     <button type="submit" class="px-6 py-2 rounded-md font-semibold flex items-center space-x-2 <?php echo $is_favorited ? 'bg-pink-500 text-white' : 'bg-pink-100 text-pink-800'; ?> hover:bg-pink-200 transition-colors">
@@ -236,10 +236,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <i class="fas fa-print"></i>
                     <span>Print Recipe</span>
                 </button>
-                <a href="download_recipe.php?id=<?php echo $recipe['id']; ?>" class="flex-shrink-0 bg-gray-700 hover:bg-gray-800 text-white px-6 py-2 rounded-md font-semibold flex items-center space-x-2">
-                    <i class="fas fa-download"></i>
-                    <span>Download (.txt)</span>
-                </a>
                 <a href="#" class="flex-shrink-0 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md font-semibold flex items-center space-x-2">
                     <i class="fas fa-hand-holding-dollar"></i>
                     <span>Donate</span>
@@ -257,12 +253,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     </a>
                     <a href="https://pinterest.com/pin/create/button/?url=<?php echo $share_url; ?>&media=<?php echo $share_image; ?>&description=<?php echo $share_description; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition-colors" aria-label="Share on Pinterest">
                         <i class="fab fa-pinterest-p"></i>
-                    </a>
-                    <a href="https://www.reddit.com/submit?url=<?php echo $share_url; ?>&title=<?php echo $share_title; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-orange-500 text-white hover:bg-orange-600 transition-colors" aria-label="Share on Reddit">
-                        <i class="fab fa-reddit-alien"></i>
-                    </a>
-                     <a href="https://www.linkedin.com/shareArticle?mini=true&url=<?php echo $share_url; ?>&title=<?php echo $share_title; ?>&summary=<?php echo $share_description; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-sky-700 text-white hover:bg-sky-800 transition-colors" aria-label="Share on LinkedIn">
-                        <i class="fab fa-linkedin-in"></i>
                     </a>
                     <a href="https://api.whatsapp.com/send?text=<?php echo $share_title; ?>%20<?php echo $share_url; ?>" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors" aria-label="Share on WhatsApp">
                         <i class="fab fa-whatsapp"></i>
@@ -308,29 +298,41 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div>
                     <h2 class="text-2xl font-bold mb-4">Ingredients</h2>
-                    <ul class="list-disc list-inside space-y-2 text-gray-700">
-                        <?php 
-                        $ingredients = json_decode($recipe['ingredients'], true);
-                        if (is_array($ingredients)) {
-                            foreach ($ingredients as $ingredient) {
-                                echo '<li>' . htmlspecialchars($ingredient) . '</li>';
+                    <div class="prose max-w-none">
+                        <?php
+                            // **EMMA'S ROBUST FIX:** Check if data is JSON or plain text.
+                            $ingredients_raw = $recipe['ingredients'];
+                            $ingredients_array = json_decode($ingredients_raw, true);
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($ingredients_array)) {
+                                echo '<ul class="list-disc list-inside space-y-2 text-gray-700">';
+                                foreach ($ingredients_array as $item) {
+                                    echo '<li>' . htmlspecialchars($item) . '</li>';
+                                }
+                                echo '</ul>';
+                            } else {
+                                echo nl2br(htmlspecialchars($ingredients_raw));
                             }
-                        }
                         ?>
-                    </ul>
+                    </div>
                 </div>
                 <div>
                     <h2 class="text-2xl font-bold mb-4">Instructions</h2>
-                    <ol class="list-decimal list-inside space-y-4 text-gray-700">
-                         <?php 
-                        $instructions = json_decode($recipe['instructions'], true);
-                        if (is_array($instructions)) {
-                            foreach ($instructions as $instruction) {
-                                echo '<li>' . htmlspecialchars($instruction) . '</li>';
+                    <div class="prose max-w-none">
+                         <?php
+                            // **EMMA'S ROBUST FIX:** Check if data is JSON or plain text.
+                            $instructions_raw = $recipe['instructions'];
+                            $instructions_array = json_decode($instructions_raw, true);
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($instructions_array)) {
+                                echo '<ol class="list-decimal list-inside space-y-4 text-gray-700">';
+                                foreach ($instructions_array as $item) {
+                                    echo '<li>' . htmlspecialchars($item) . '</li>';
+                                }
+                                echo '</ol>';
+                            } else {
+                                echo nl2br(htmlspecialchars($instructions_raw));
                             }
-                        }
                         ?>
-                    </ol>
+                    </div>
                 </div>
             </div>
              <div class="bg-gray-50 p-6 rounded-lg mb-8">
@@ -339,34 +341,38 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <h3 class="text-xl font-semibold mb-3">Nutrition Facts (Summary)</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
                     <?php
-                        $nutrition_info = json_decode($recipe['nutrition_info'], true);
-                        if (is_array($nutrition_info)) {
-                            foreach($nutrition_info as $key => $value) {
+                        // **EMMA'S ROBUST FIX:** Check if data is JSON or plain text.
+                        $nutrition_info_raw = $recipe['nutrition_info'];
+                        $nutrition_info_array = json_decode($nutrition_info_raw, true);
+
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($nutrition_info_array)) {
+                            foreach($nutrition_info_array as $key => $value) {
                                 echo '<div class="bg-white p-3 rounded-lg shadow-sm">';
                                 echo '<h4 class="font-semibold text-gray-500 text-sm">' . htmlspecialchars($key) . '</h4>';
                                 echo '<p class="text-lg font-bold text-green-600">' . htmlspecialchars($value) . '</p>';
                                 echo '</div>';
                             }
+                        } elseif (!empty($nutrition_info_raw)) {
+                             echo '<div class="bg-white p-3 rounded-lg shadow-sm col-span-full text-left">';
+                             echo '<p class="text-gray-700">' . nl2br(htmlspecialchars($nutrition_info_raw)) . '</p>';
+                             echo '</div>';
                         } else {
-                            echo '<p class="text-gray-500">No nutrition information available.</p>';
+                            echo '<p class="text-gray-500 col-span-full">No nutrition information available.</p>';
                         }
                     ?>
                     </div>
                 </div>
                 <div>
                     <h3 class="text-xl font-semibold mb-3">Chef's Notes</h3>
-                    <ul class="list-disc list-inside space-y-2 text-gray-700 word-wrap-break">
-                    <?php
-                        if (!empty($recipe['notes'])) {
-                            $notes_array = preg_split('/(?<=[.?!])\s+/', $recipe['notes'], -1, PREG_SPLIT_NO_EMPTY);
-                            foreach ($notes_array as $note_sentence) {
-                                echo '<li>' . htmlspecialchars(trim($note_sentence)) . '</li>';
+                    <div class="prose max-w-none">
+                        <?php 
+                            if (!empty($recipe['notes'])) {
+                                echo nl2br(htmlspecialchars($recipe['notes']));
+                            } else {
+                                echo '<p>No special notes for this recipe.</p>';
                             }
-                        } else {
-                            echo '<li>No special notes for this recipe.</li>';
-                        }
-                    ?>
-                    </ul>
+                        ?>
+                    </div>
                 </div>
             </div>
 
