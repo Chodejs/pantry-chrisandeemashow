@@ -130,7 +130,7 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-4">
                 <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full">
-                    <input type="text" name="query" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
+                    <input type="text" name="q" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
                     <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500">
                         <i class="fas fa-search"></i>
                     </button>
@@ -162,7 +162,7 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                  <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full mb-4 px-2">
-                    <input type="text" name="query" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
+                    <input type="text" name="q" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
                     <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500">
                         <i class="fas fa-search"></i>
                     </button>
@@ -442,7 +442,7 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
 
  <footer class="bg-gray-800 text-white py-8 mt-12 no-print">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; <?php echo date('Y'); ?> <a href="https://www.chrisandemmashow.com" target="_blank" class="hover:underline">Chris and Emma Show</a>. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> <a href="https://www.chrisandemmashow.com" target="_blank" class="hover:underline">The Chris and Emma Show</a>. All rights reserved.</p>
         </div>
     </footer>
     <script>
@@ -474,4 +474,3 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
 
 </body>
 </html>
-

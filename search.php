@@ -108,7 +108,7 @@ try {
                 <?php foreach ($recipes as $recipe): ?>
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-2xl">
                         <a href="recipe.php?id=<?php echo $recipe['id']; ?>" class="block">
-                            <img src="<?php echo htmlspecialchars($recipe['image_url']); ?>" alt="<?php echo htmlspecialchars($recipe['title']); ?>" class="w-full h-48 object-cover">
+                            <img src="<?php echo htmlspecialchars($recipe['image_url']); ?>" alt="<?php echo htmlspecialchars($recipe['title']); ?>" class="w-full h-64 object-cover">
                             <div class="p-6">
                                 <h3 class="text-2xl font-bold text-gray-900 mb-2 truncate"><?php echo htmlspecialchars($recipe['title']); ?></h3>
                                 <div class="flex items-center mb-4">
