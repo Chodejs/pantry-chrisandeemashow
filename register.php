@@ -53,21 +53,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Chris and Emma's Pantry</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
+// Set the page title for the header
+$page_title = "Register";
+
+// Include the new header
+require_once 'includes/header.php';
+?>
+
+<main class="container mx-auto px-6 py-12 flex items-center justify-center" style="min-height: calc(100vh - 160px);">
     <div class="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
         <div class="text-center mb-8">
             <a href="index.php" class="text-3xl font-bold text-green-600">Chris and Emma's Pantry</a>
@@ -108,6 +102,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             Already have an account? <a href="login.php" class="font-bold text-green-600 hover:text-green-800">Log in here</a>.
         </p>
     </div>
+</main>
 
-</body>
-</html>
+<?php
+// Include the new footer
+require_once 'includes/footer.php';
+?>

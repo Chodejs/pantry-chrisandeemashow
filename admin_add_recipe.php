@@ -76,7 +76,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt = $pdo->prepare($sql);
             
             if ($stmt->execute([$title, $description, $ingredients_json, $instructions_json, $prep_time, $cook_time, $yields, $image_url, $nutrition_json, $notes, $author_id])) {
-                // **FIX 1: Use the current file's path for the redirect**
                 header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
                 exit();
             } else {
@@ -92,44 +91,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 if (isset($_GET['success']) && $_GET['success'] == 1) {
     $success_message = "Recipe added successfully! You can now add another one.";
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Enhanced Recipe Uploader</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Inter', sans-serif; } </style>
-</head>
-<body class="bg-gray-100">
 
-    <!-- Admin Navigation (Same as before) -->
-    <header class="bg-white shadow-md">
-        <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <div class="text-2xl font-bold text-gray-800">Admin Dashboard</div>
-            <div class="hidden md:flex items-center space-x-4">
-                <a href="admin_remixes.php" class="text-gray-600 hover:text-green-600">Remix Moderation</a>
-                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="text-green-600 font-semibold border-b-2 border-green-600">Add a Recipe (Enhanced)</a>
-                <a href="index.php" class="text-gray-600 hover:text-green-600">Back to Site</a>
-                <a href="logout.php" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Logout</a>
-            </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-                </button>
-            </div>
-        </nav>
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
-             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="admin_remixes.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Remix Moderation</a>
-                <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" class="block px-3 py-2 rounded-md text-base font-medium text-green-700 bg-green-50">Add a Recipe (Enhanced)</a>
-                <a href="index.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Back to Site</a>
-                <a href="logout.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Logout</a>
-            </div>
-        </div>
-    </header>
+$page_title = "Enhanced Recipe Uploader";
+require_once 'includes/admin_header.php';
+?>
 
     <main class="container mx-auto px-6 py-12">
         <h1 class="text-3xl font-extrabold text-gray-900 mb-8">Enhanced Recipe Uploader</h1>
@@ -146,7 +111,6 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
             </div>
 
             <!-- Right Panel: The Recipe Form -->
-            <!-- **FIX 2: Use the current file's path for the form action** -->
             <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-lg space-y-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">2. Review & Save</h2>
                 
@@ -225,7 +189,6 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
 
     <script>
         // --- Emma's Magic Parsing Engine (v2) ---
-        // This Javascript code remains unchanged from the previous version.
         document.getElementById('parse-recipe-btn').addEventListener('click', function() {
             const rawText = document.getElementById('raw-recipe-input').value;
             if (!rawText) {
@@ -351,14 +314,6 @@ if (isset($_GET['success']) && $_GET['success'] == 1) {
                 e.target.parentElement.remove();
             }
         });
-
-        // JavaScript for mobile menu toggle
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
     </script>
-</body>
-</html>
-
+    
+<?php require_once 'includes/footer.php'; ?>

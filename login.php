@@ -47,35 +47,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 }
+
+// Set the page title for the header
+$page_title = "Login";
+
+// Include the new header
+require_once 'includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Chris and Emma's Pantry</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style> body { font-family: 'Inter', sans-serif; } </style>
-</head>
-<body class="bg-gray-100">
 
-    <header class="bg-white shadow-md">
-        <!-- **EMMA'S RESPONSIVE FIX** -->
-        <!-- I've changed the flexbox classes here. -->
-        <!-- 'flex-col sm:flex-row' makes the items stack vertically on small screens and go side-by-side on larger ones. -->
-        <!-- 'gap-4' adds spacing when they are stacked. -->
-        <nav class="container mx-auto px-6 py-4 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
-             <a href="index.php" class="text-2xl font-bold text-green-600">Chris and Emma's Pantry</a>
-             <div>
-                <a href="login.php" class="text-green-600 font-semibold border-b-2 border-green-600">Login</a>
-                <a href="register.php" class="ml-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Register</a>
-             </div>
-        </nav>
-    </header>
-
-    <main class="container mx-auto px-6 py-12">
-        <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <main class="container mx-auto px-6 py-12 flex items-center justify-center" style="min-height: calc(100vh - 160px);">
+        <div class="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
             <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Welcome Back!</h1>
 
             <?php if (!empty($error_message)): ?>
@@ -86,6 +67,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
              <?php if (isset($_GET['message'])): ?>
                 <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6" role="alert">
                     <?php echo htmlspecialchars($_GET['message']); ?>
+                </div>
+            <?php endif; ?>
+             <?php if (isset($_GET['registration']) && $_GET['registration'] == 'success'): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
+                    Registration successful! Please log in to continue.
                 </div>
             <?php endif; ?>
 
@@ -112,6 +98,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </main>
 
-</body>
-</html>
-<?php ob_end_flush(); // Send the final output to the browser ?>
+<?php
+// Include the new footer
+require_once 'includes/footer.php';
+ob_end_flush(); // Send the final output to the browser
+?>

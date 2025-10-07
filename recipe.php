@@ -25,6 +25,15 @@ try {
         exit();
     }
     
+    // --- NEW: Fetch previous and next recipe IDs and titles ---
+    $prevStmt = $pdo->prepare("SELECT id, title FROM recipes WHERE id < ? ORDER BY id DESC LIMIT 1");
+    $prevStmt->execute([$recipe_id]);
+    $prev_recipe = $prevStmt->fetch();
+
+    $nextStmt = $pdo->prepare("SELECT id, title FROM recipes WHERE id > ? ORDER BY id ASC LIMIT 1");
+    $nextStmt->execute([$recipe_id]);
+    $next_recipe = $nextStmt->fetch();
+    
     // Fetch comments, remixes, etc.
     $commentStmt = $pdo->prepare("SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE c.recipe_id = ? ORDER BY c.created_at DESC");
     $commentStmt->execute([$recipe_id]);
@@ -64,123 +73,12 @@ $share_title = urlencode($recipe['title']);
 $share_description = urlencode($recipe['description']);
 $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_url'], '/'));
 
+// Set the page title for the header
+$page_title = htmlspecialchars($recipe['title']);
+
+// Include the new header
+require_once 'includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo htmlspecialchars($recipe['title']); ?> - Chris and Emma's Pantry</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .word-wrap-break { word-wrap: break-word; overflow-wrap: break-word; }
-        .rating-stars input[type="radio"] { display: none; }
-        .rating-stars label {
-            font-size: 2.5rem;
-            color: #d1d5db; /* gray-300 */
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .rating-stars input[type="radio"]:checked ~ label,
-        .rating-stars:hover label,
-        .rating-stars label:hover ~ label {
-            color: #f59e0b; /* amber-500 */
-        }
-        .rating-stars input[type="radio"]:hover ~ label {
-             color: #f59e0b;
-        }
-        .rating-stars label:hover {
-            color: #f59e0b !important;
-        }
-
-        /* Print-specific styles */
-        @media print {
-            body {
-                background-color: white;
-            }
-            header, footer, .no-print {
-                display: none !important;
-            }
-            main {
-                padding: 0;
-            }
-            article {
-                box-shadow: none;
-                border: 1px solid #ccc;
-                max-width: 100%;
-            }
-            img {
-                max-width: 50% !important; /* Make image smaller for print */
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
-    </style>
-</head>
-<body class="bg-gray-100 text-gray-800">
-
-    <!-- Navigation Bar -->
-    <header class="bg-white shadow-md no-print sticky top-0 z-50">
-        <nav class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <a href="index.php" class="text-2xl font-bold text-green-600">Chris and Emma's Pantry</a>
-            
-            <!-- Desktop Menu -->
-            <div class="hidden md:flex items-center space-x-4">
-                <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full">
-                    <input type="text" name="q" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
-                    <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <span class="text-gray-700">Welcome, <?php echo htmlspecialchars(strtok($_SESSION['username'], ' ')); ?>!</span>
-                    <a href="favorites.php" class="text-gray-600 hover:text-green-600">My Favorites</a>
-                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
-                        <a href="admin_remixes.php" class="text-blue-600 hover:text-blue-800 font-semibold">Admin Panel</a>
-                    <?php endif; ?>
-                    <a href="logout.php" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">Logout</a>
-                <?php else: ?>
-                    <a href="login.php" class="text-gray-600 hover:text-green-600">Login</a>
-                    <a href="register.php" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">Register</a>
-                <?php endif; ?>
-            </div>
-
-            <!-- Mobile Menu Button -->
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-gray-800 focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                    </svg>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                 <form action="search.php" method="GET" class="flex items-center bg-gray-200 rounded-full mb-4 px-2">
-                    <input type="text" name="q" placeholder="Search..." class="w-full py-2 px-4 rounded-full focus:outline-none bg-transparent text-gray-700">
-                    <button type="submit" class="text-gray-500 p-2 rounded-full hover:text-green-500">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
-                <?php if (isset($_SESSION['user_id'])): ?>
-                    <p class="block px-3 py-2 text-base font-medium text-gray-700">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?>!</p>
-                    <a href="favorites.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">My Favorites</a>
-                    <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
-                        <a href="admin_remixes.php" class="block px-3 py-2 rounded-md text-base font-medium text-blue-600 hover:text-blue-800 hover:bg-gray-50">Admin Panel</a>
-                    <?php endif; ?>
-                    <a href="logout.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-red-500 hover:bg-red-600">Logout</a>
-                <?php else: ?>
-                    <a href="login.php" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-gray-50">Login</a>
-                    <a href="register.php" class="block px-3 py-2 rounded-md text-base font-medium text-white bg-green-500 hover:bg-green-600">Register</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </header>
 
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-12">
@@ -218,9 +116,15 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                 </p>
             </div>
 
-            <p class="text-lg text-gray-600 mb-6"><?php echo htmlspecialchars($recipe['description']); ?></p>
+            <p class="text-lg text-gray-600 mb-6"><?php echo nl2br(htmlspecialchars($recipe['description'])); ?></p>
 
              <div class="flex flex-wrap items-center justify-center gap-4 mb-8 no-print">
+                <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']): ?>
+                    <a href="admin_edit_recipe.php?id=<?php echo $recipe['id']; ?>" class="flex-shrink-0 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-md font-semibold flex items-center space-x-2">
+                        <i class="fas fa-pencil-alt"></i>
+                        <span>Edit Recipe</span>
+                    </a>
+                <?php endif; ?>
                 <form action="toggle_favorite.php" method="POST" class="flex-shrink-0">
                     <input type="hidden" name="recipe_id" value="<?php echo $recipe['id']; ?>">
                     <button type="submit" class="px-6 py-2 rounded-md font-semibold flex items-center space-x-2 <?php echo $is_favorited ? 'bg-pink-500 text-white' : 'bg-pink-100 text-pink-800'; ?> hover:bg-pink-200 transition-colors">
@@ -236,9 +140,9 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <i class="fas fa-print"></i>
                     <span>Print Recipe</span>
                 </button>
-                <a href="#" class="flex-shrink-0 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-md font-semibold flex items-center space-x-2">
-                    <i class="fas fa-hand-holding-dollar"></i>
-                    <span>Donate</span>
+                 <a href="download_recipe.php?id=<?php echo $recipe['id']; ?>" class="flex-shrink-0 bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-2 rounded-md font-semibold flex items-center space-x-2" title="Download as .txt file">
+                    <i class="fas fa-download"></i>
+                    <span>Download</span>
                 </a>
             </div>
 
@@ -300,7 +204,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <h2 class="text-2xl font-bold mb-4">Ingredients</h2>
                     <div class="prose max-w-none">
                         <?php
-                            // **EMMA'S ROBUST FIX:** Check if data is JSON or plain text.
                             $ingredients_raw = $recipe['ingredients'];
                             $ingredients_array = json_decode($ingredients_raw, true);
                             if (json_last_error() === JSON_ERROR_NONE && is_array($ingredients_array)) {
@@ -319,7 +222,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <h2 class="text-2xl font-bold mb-4">Instructions</h2>
                     <div class="prose max-w-none">
                          <?php
-                            // **EMMA'S ROBUST FIX:** Check if data is JSON or plain text.
                             $instructions_raw = $recipe['instructions'];
                             $instructions_array = json_decode($instructions_raw, true);
                             if (json_last_error() === JSON_ERROR_NONE && is_array($instructions_array)) {
@@ -341,7 +243,6 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                     <h3 class="text-xl font-semibold mb-3">Nutrition Facts (Summary)</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
                     <?php
-                        // **EMMA'S ROBUST FIX:** Check if data is JSON or plain text.
                         $nutrition_info_raw = $recipe['nutrition_info'];
                         $nutrition_info_array = json_decode($nutrition_info_raw, true);
 
@@ -415,7 +316,7 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                         </div>
                     </form>
                 <?php else: ?>
-                    <p class="text-center text-gray-600 bg-gray-100 p-4 rounded-lg">You must be <a href="login.php" class="text-green-600 font-semibold hover:underline">logged in</a> to post a comment.</p>
+                    <p class="text-center text-gray-600 bg-gray-100 p-4 rounded-lg">You must be <a href="login.php?return_to=<?php echo urlencode($current_page_url); ?>" class="text-green-600 font-semibold hover:underline">logged in</a> to post a comment.</p>
                 <?php endif; ?>
 
                 <div class="space-y-6">
@@ -438,39 +339,56 @@ $share_image = urlencode($protocol . "://" . $host . "/" . ltrim($recipe['image_
                 </div>
             </div>
         </article>
+
+        <!-- Previous/Next Recipe Navigation -->
+        <nav class="max-w-4xl mx-auto mt-12 flex justify-between items-start no-print border-t pt-8">
+            <div>
+                <?php if ($prev_recipe): ?>
+                    <a href="recipe.php?id=<?php echo $prev_recipe['id']; ?>" class="inline-flex items-center text-gray-600 hover:text-green-700 group">
+                        <i class="fas fa-arrow-left mr-3 text-2xl group-hover:text-green-600 transition-colors"></i>
+                        <div>
+                            <span class="font-semibold text-lg">Previous Recipe</span><br>
+                            <span class="text-sm text-gray-500 group-hover:text-gray-800 transition-colors"><?php echo htmlspecialchars($prev_recipe['title']); ?></span>
+                        </div>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <div class="text-right">
+                <?php if ($next_recipe): ?>
+                    <a href="recipe.php?id=<?php echo $next_recipe['id']; ?>" class="inline-flex items-center text-gray-600 hover:text-green-700 group">
+                        <div>
+                            <span class="font-semibold text-lg">Next Recipe</span><br>
+                            <span class="text-sm text-gray-500 group-hover:text-gray-800 transition-colors"><?php echo htmlspecialchars($next_recipe['title']); ?></span>
+                        </div>
+                        <i class="fas fa-arrow-right ml-3 text-2xl group-hover:text-green-600 transition-colors"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </nav>
+
     </main>
 
- <footer class="bg-gray-800 text-white py-8 mt-12 no-print">
-        <div class="container mx-auto px-6 text-center">
-            <p>&copy; <?php echo date('Y'); ?> <a href="https://www.chrisandemmashow.com" target="_blank" class="hover:underline">The Chris and Emma Show</a>. All rights reserved.</p>
-        </div>
-    </footer>
     <script>
-        // JavaScript for mobile menu toggle
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        
-        mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // JavaScript for the copy link button
         const copyBtn = document.getElementById('copy-link-btn');
         const feedbackSpan = document.getElementById('copy-feedback');
         
-        copyBtn.addEventListener('click', () => {
-            const urlToCopy = '<?php echo $current_page_url; ?>';
+        if(copyBtn && feedbackSpan) {
+            copyBtn.addEventListener('click', () => {
+                const urlToCopy = '<?php echo $current_page_url; ?>';
 
-            navigator.clipboard.writeText(urlToCopy).then(() => {
-                feedbackSpan.style.opacity = '1';
-                setTimeout(() => {
-                    feedbackSpan.style.opacity = '0';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
+                navigator.clipboard.writeText(urlToCopy).then(() => {
+                    feedbackSpan.style.opacity = '1';
+                    setTimeout(() => {
+                        feedbackSpan.style.opacity = '0';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
             });
-        });
+        }
     </script>
 
-</body>
-</html>
+<?php
+require_once 'includes/footer.php';
+?>
+
