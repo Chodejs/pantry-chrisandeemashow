@@ -9,9 +9,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?>Chris and Emma's Pantry</title>
+
+    <?php
+    // --- EMMA'S OPEN GRAPH (OGP) & TWITTER CARD IMPLEMENTATION ---
+    
+    // 1. Set up the base URL (needed for all absolute URLs)
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+    $host = $_SERVER['HTTP_HOST'];
+    $base_url = $protocol . "://" . $host;
+
+    // 2. Check if we are on a specific recipe page.
+    //    We know we are if the '$recipe' variable is set (which recipe.php does *before* including this header)
+    if (isset($recipe) && is_array($recipe)) {
+        // --- This is a Recipe Page ---
+        $og_title = $recipe['title'];
+        // Clean the description: remove HTML and trim it
+        $og_description = htmlspecialchars(strip_tags($recipe['description']));
+        // Create an absolute URL for the image
+        $og_image = $base_url . "/" . ltrim($recipe['image_url'], '/');
+        // $current_page_url is already defined in recipe.php before this file is included
+        $og_url = $current_page_url; 
+        $og_type = "article"; // A recipe is a type of article
+
+    } else {
+        // --- This is a General Page (Homepage, Search, Favorites, etc.) ---
+        // Use the $page_title if available, otherwise a default
+        $og_title = (isset($page_title) ? htmlspecialchars($page_title) . ' | ' : '') . "Chris and Emma's Pantry";
+        $og_description = "Discover a growing collection of delicious, wholesome, and plant-powered recipes from our kitchen to yours.";
+        // Use a nice default image for the site
+        $og_image = $base_url . "/images/classic-pancakes.jpg"; 
+        // Get the current URL
+        $og_url = $base_url . $_SERVER['REQUEST_URI'];
+        $og_type = "website";
+    }
+    ?>
+
+    <!-- Open Graph Tags (for Facebook, Pinterest, etc.) -->
+    <meta property="og:title" content="<?php echo htmlspecialchars($og_title); ?>">
+    <meta property="og:description" content="<?php echo htmlspecialchars($og_description); ?>">
+    <meta property="og:image" content="<?php echo htmlspecialchars($og_image); ?>">
+    <meta property="og:url" content="<?php echo htmlspecialchars($og_url); ?>">
+    <meta property="og:type" content="<?php echo htmlspecialchars($og_type); ?>">
+    <meta property="og:site_name" content="Chris and Emma's Pantry">
+    
+    <!-- Twitter Card Tags (for X / Twitter) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo htmlspecialchars($og_title); ?>">
+    <meta name="twitter:description" content="<?php echo htmlspecialchars($og_description); ?>">
+    <meta name="twitter:image" content="<?php echo htmlspecialchars($og_image); ?>">
+
+    <!-- --- END OF OGP IMPLEMENTATION --- -->
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.css">
     <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
